@@ -3,33 +3,102 @@ var instance_skel = require('../../instance_skel');
 var debug;
 var log;
 
+var IP1PATTERN = [
+	{ id: 0, label: 'Off' },
+	{ id: 1, label: 'H-Ramp' },
+	{ id: 2, label: 'V-Ramp'},
+	{ id: 3, label: '100% Bars'},
+	{ id: 4, label: '75% Bars'},
+	{ id: 5, label: '16x16 Grid'},
+	{ id: 6, label: '32x32 Grid'},
+	{ id: 7, label: 'Burst'},
+	{ id: 8, label: '50% Grey'},
+	{ id: 9, label: 'Grey steps 1'},
+	{ id: 10, label: 'Grey steps 2'}
+];
+
+var IP2PATTERN = [
+	{ id: 0, label: 'Off' },
+	{ id: 1, label: 'H-Ramp' },
+	{ id: 2, label: 'V-Ramp'},
+	{ id: 3, label: '100% Bars'},
+	{ id: 4, label: '16x16 Grid'},
+	{ id: 5, label: '32x32 Grid'},
+	{ id: 6, label: 'Burst'},
+	{ id: 7, label: '75% Bars'},
+	{ id: 8, label: '50% Grey'},
+	{ id: 9, label: 'Grey steps 1'},
+	{ id: 10, label: 'Grey steps 2'},
+	{ id: 11, label: 'White'},
+	{ id: 12, label: 'Black'},
+	{ id: 13, label: 'SMPTE'},
+];
+
+var IP1INPUT = [
+	{ id: 1, label: 'DVI' },
+	{ id: 2, label: 'VGA' },
+	{ id: 3, label: 'Component'},
+	{ id: 4, label: 'SDI'},
+	{ id: 5, label: 'Black/logo'}
+];
+
+var IP2INPUT = [
+	{ id: 1, label: 'DVI' },
+	{ id: 2, label: 'Analog' },
+	{ id: 3, label: 'HDMI'},
+	{ id: 4, label: 'DisplayPort'},
+	{ id: 5, label: 'SDI 1'},
+	{ id: 6, label: 'SDI 2'},
+	{ id: 7, label: 'Logo'},
+	{ id: 8, label: 'Black'}
+];
+
+
+
 function instance(system, id, config) {
 	var self = this;
 
 	// super-constructor
 	instance_skel.apply(this, arguments);
 
-	self.actions(); // export actions
-
 	return self;
 }
 
 instance.prototype.updateConfig = function(config) {
 	var self = this;
-
+	self.updateDropD()
 	self.config = config;
 	self.init_tcp();
 };
 
-instance.prototype.init = function() {
+instance.prototype.updateDropD = function() {
 	var self = this;
 
+	if (self.config.ver == 'ip1') {
+			self.pattern = IP1PATTERN;
+			self.ipInput = IP1INPUT;
+			debug(self.config.ver,self.ipInput,self.pattern)
+	};
+
+	if (self.config.ver == 'ip2') {
+			self.pattern = IP2PATTERN;
+			self.ipInput = IP2INPUT;
+			debug(self.config.ver,self.ipInput,self.pattern)
+	};
+
+
+};
+
+instance.prototype.init = function() {
+	var self = this;
 	debug = self.debug;
 	log = self.log;
 
-	self.status(1,'Connecting'); // status ok!
 
+	self.status(1,'Connecting'); // status ok!
+	self.updateDropD()
 	self.init_tcp();
+	self.actions(); // export actions
 };
 
 instance.prototype.init_tcp = function() {
@@ -38,7 +107,7 @@ instance.prototype.init_tcp = function() {
 	if (self.socket !== undefined) {
 		self.socket.destroy();
 		delete self.socket;
-	}
+	};
 
 	if (self.config.host) {
 		self.socket = new tcp(self.config.host, 10001);
@@ -73,6 +142,16 @@ instance.prototype.config_fields = function () {
 			label: 'Target IP',
 			width: 6,
 			regex: self.REGEX_IP
+		},
+		{
+			type: 'dropdown',
+			id: 'ver',
+			label: 'ImagePro Version',
+			width: 6,
+			choices: [
+				{ id: 'ip1', label: 'ImagePro 1/HD' },
+				{ id: 'ip2', label: 'ImagePro II' },
+			]
 		}
 	]
 };
@@ -87,6 +166,8 @@ instance.prototype.destroy = function() {
 
 	debug("destroy", self.id);;
 };
+
+
 
 
 instance.prototype.actions = function(system) {
@@ -113,19 +194,8 @@ instance.prototype.actions = function(system) {
 					type: 'dropdown',
 					label: 'Select Pattern',
 					id: 'pat',
-					choices: [
-						{ id: 0, label: 'Off' },
-						{ id: 1, label: 'H-Ramp' },
-						{ id: 2, label: 'V-Ramp'},
-						{ id: 3, label: '100% Bars'},
-						{ id: 4, label: '75% Bars'},
-						{ id: 5, label: '16x16 Grid'},
-						{ id: 6, label: '32x32 Grid'},
-						{ id: 7, label: 'Burst'},
-						{ id: 8, label: '50% Grey'},
-						{ id: 9, label: 'Grey steps 1'},
-						{ id: 10, label: 'Grey steps 2'}
-					]
+					choices: self.pattern
+
 				},
 				{
 					type: 'dropdown',
@@ -146,13 +216,7 @@ instance.prototype.actions = function(system) {
 					type: 'dropdown',
 						 label: 'Input',
 						 id: 'inpId',
-						 choices: [
-							 { id: 1, label: 'DVI' },
-							 { id: 2, label: 'VGA' },
-							 { id: 3, label: 'Component'},
-							 { id: 4, label: 'SDI'},
-							 { id: 5, label: 'Black/logo'}
-						 ]
+						 choices: self.ipInput
 				}
 			]
 		}
@@ -187,13 +251,26 @@ instance.prototype.actions = function(system) {
 
 	if (cmd !== undefined) {
 
-		debug('sending ',cmd,"to",self.config.host);
+		debug('sending ',cmd);
 
-		if (self.socket !== undefined && self.socket.connected) {
-			self.socket.send(cmd + "\r");
-		} else {
-			debug('Socket not connected :(');
-		}
+
+		if (self.config.ver == 'ip1') {
+			if (self.socket !== undefined && self.socket.connected) {
+				self.socket.send(cmd + "\r");
+				debug('to ImagePro 1 at',self.config.host)
+			} else {
+				debug('Socket not connected :(');
+			}
+		};
+
+		if (self.config.ver == 'ip2') {
+			if (self.socket !== undefined && self.socket.connected) {
+				self.socket.send(cmd + "\n");
+				debug('to ImagePro 2 at',self.config.host)
+			} else {
+				debug('Socket not connected :(');
+			}
+		};
 
 	}
 
