@@ -1,7 +1,7 @@
 {
   "name": "imagepro",
-  "version": "0.0.1",
-  "description": "Module to control ImagePro",
+  "version": "0.0.2",
+  "description": "Module to control ImagePro 1/HD and ImagePro II",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

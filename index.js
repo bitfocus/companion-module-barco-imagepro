@@ -69,6 +69,7 @@ instance.prototype.updateConfig = function(config) {
 	self.updateDropD()
 	self.config = config;
 	self.init_tcp();
+	self.actions();
 };
 
 instance.prototype.updateDropD = function() {
@@ -148,6 +149,7 @@ instance.prototype.config_fields = function () {
 			id: 'ver',
 			label: 'ImagePro Version',
 			width: 6,
+			default: 'ip1',
 			choices: [
 				{ id: 'ip1', label: 'ImagePro 1/HD' },
 				{ id: 'ip2', label: 'ImagePro II' },
@@ -180,6 +182,7 @@ instance.prototype.actions = function(system) {
 					type: 'dropdown',
 					label: 'Freeze on/off',
 					id: 'frzId',
+					default: '0',
 					choices: [
 						{ id: 0, label: 'Off' },
 						{ id: 1, label: 'On' },
@@ -194,6 +197,7 @@ instance.prototype.actions = function(system) {
 					type: 'dropdown',
 					label: 'Select Pattern',
 					id: 'pat',
+					default: '0',
 					choices: self.pattern
 
 				},
@@ -201,6 +205,7 @@ instance.prototype.actions = function(system) {
 					type: 'dropdown',
 					label: 'Scroling on/off',
 					id: 'scrolId',
+					default: '0',
 					choices: [
 						{ id: 0, label: 'Off' },
 						{ id: 1, label: 'On' },
@@ -216,6 +221,7 @@ instance.prototype.actions = function(system) {
 					type: 'dropdown',
 						 label: 'Input',
 						 id: 'inpId',
+						 default: '1',
 						 choices: self.ipInput
 				}
 			]
@@ -281,7 +287,7 @@ instance.prototype.actions = function(system) {
 instance.module_info = {
 	label: 'Barco ImagePro',
 	id: 'imagepro',
-	version: '0.0.1'
+	version: '0.0.2'
 };
 
 instance_skel.extendedBy(instance);
