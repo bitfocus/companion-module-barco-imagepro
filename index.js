@@ -284,11 +284,5 @@ instance.prototype.actions = function(system) {
 
 };
 
-instance.module_info = {
-	label: 'Barco ImagePro',
-	id: 'imagepro',
-	version: '0.0.2'
-};
-
 instance_skel.extendedBy(instance);
 exports = module.exports = instance;
