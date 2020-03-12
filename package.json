@@ -1,5 +1,8 @@
 {
-	"name": "imagepro",
+	"name": "barco-imagepro",
+	"legacy": [
+		"imagepro"
+	],
 	"version": "1.0.1",
 	"api_version": "1.0.0",
 	"keywords": [
