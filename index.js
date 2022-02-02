@@ -174,7 +174,7 @@ instance.prototype.destroy = function() {
 
 instance.prototype.actions = function(system) {
 	var self = this;
-	self.system.emit('instance_actions', self.id, {
+	self.setActions({
 		'freeze':     {
 			label: 'Freeze Output',
 			options: [
